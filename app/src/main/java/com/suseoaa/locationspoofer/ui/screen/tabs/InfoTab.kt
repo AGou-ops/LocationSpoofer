@@ -28,44 +28,31 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.suseoaa.locationspoofer.BuildConfig
 import com.suseoaa.locationspoofer.R
 import com.suseoaa.locationspoofer.data.model.AppState
 import com.suseoaa.locationspoofer.data.model.MapEngine
 import com.suseoaa.locationspoofer.ui.screen.FooterLinks
 import com.suseoaa.locationspoofer.ui.screen.LANGUAGES
 import com.suseoaa.locationspoofer.ui.screen.UpdateCheckCard
-import com.suseoaa.locationspoofer.ui.screen.isNewerVersion
 import com.suseoaa.locationspoofer.ui.theme.AccentBlue
 import com.suseoaa.locationspoofer.ui.theme.AccentGreen
 import com.suseoaa.locationspoofer.ui.theme.AppColors
 import com.suseoaa.locationspoofer.ui.theme.noRippleClickable
 import com.suseoaa.locationspoofer.viewmodel.MainViewModel
-import com.suseoaa.locationspoofer.viewmodel.UpdateUiState
 import top.yukonga.miuix.kmp.basic.Card as MiuixCard
 
 @Composable
 fun InfoTab(
     viewModel: MainViewModel,
     uiState: AppState,
-    updateUiState: UpdateUiState? = null,
     tabBarHeight: Dp = 90.dp,
     onNavigateToUpdate: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {}
 ) {
     val isDark = isSystemInDarkTheme()
 
-    val currentVersion = BuildConfig.VERSION_NAME
-    val targetReleases = remember(updateUiState?.releases, uiState.checkBetaUpdates) {
-        val list = updateUiState?.releases ?: emptyList()
-        if (uiState.checkBetaUpdates) list else list.filter { !it.isPrerelease }
-    }
-    val latestRelease = targetReleases.firstOrNull()
-    val hasNewVersion = remember(targetReleases) {
-        latestRelease != null && isNewerVersion(latestRelease.versionName, currentVersion)
-    }
-
     // 获取当前生效的语言名称
+
     val defaultLangText = stringResource(R.string.default_language)
     val savedLangCode = viewModel.getSavedLanguage()
     val currentLangName = remember(savedLangCode, defaultLangText) {
@@ -163,8 +150,8 @@ fun InfoTab(
             item {
                 UpdateCheckCard(
                     isDark = isDark,
-                    hasNewVersion = hasNewVersion,
-                    newVersionName = if (hasNewVersion) latestRelease?.versionName else null,
+                    hasNewVersion = false,
+                    newVersionName = null,
                     onCheckClick = onNavigateToUpdate
                 )
             }

@@ -286,10 +286,6 @@
     <string name="merged_count_badge">Merged %d updates</string>
     <string name="download_64">Download (64-bit)</string>
     <string name="download_32">Download 32-bit</string>
-    <string name="new_version_found">New Version Found</string>
-    <string name="new_version_prompt_desc">A new version is available. It is recommended to update for new features and optimizations.</string>
-    <string name="later">Later</string>
-    <string name="go_to_update">Go to Update</string>
     <string name="tab_all">All</string>
     <string name="tab_customized">Customized</string>
     <string name="tab_user_apps">User Apps</string>

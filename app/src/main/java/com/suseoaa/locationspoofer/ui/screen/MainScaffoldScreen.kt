@@ -24,7 +24,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.suseoaa.locationspoofer.BuildConfig
 import com.suseoaa.locationspoofer.R
 import com.suseoaa.locationspoofer.data.model.AppState
 import com.suseoaa.locationspoofer.ui.components.AppMapController
@@ -81,37 +80,6 @@ fun MainScaffoldScreen(
 
     val backdrop = rememberLayerBackdrop()
 
-    val updateUiState by updateViewModel.uiState.collectAsState()
-    var hasAutoCheckedUpdates by remember { mutableStateOf(false) }
-    var showStartupUpdateDialog by remember { mutableStateOf(false) }
-    val targetReleases = remember(updateUiState.releases, uiState.checkBetaUpdates) {
-        if (uiState.checkBetaUpdates) updateUiState.releases else updateUiState.releases.filter { !it.isPrerelease }
-    }
-    val latestRelease = targetReleases.firstOrNull()
-
-    // 软件启动进入主界面时，立即在后台检索是否有新版本发布
-    LaunchedEffect(Unit) {
-        updateViewModel.fetchReleases()
-    }
-
-    // 检测到未被忽略的新版本时弹出启动更新提示框
-    LaunchedEffect(targetReleases, updateUiState.isLoading) {
-        if (!hasAutoCheckedUpdates && !updateUiState.isLoading && targetReleases.isNotEmpty()) {
-            if (latestRelease != null) {
-                val latestVersion = latestRelease.versionName
-                val currentVersion = BuildConfig.VERSION_NAME
-                val ignoredVersion = viewModel.getIgnoredVersion()
-                if (isNewerVersion(
-                        latestVersion,
-                        currentVersion
-                    ) && latestVersion != ignoredVersion
-                ) {
-                    showStartupUpdateDialog = true
-                }
-            }
-            hasAutoCheckedUpdates = true
-        }
-    }
 
     LaunchedEffect(currentSubScreen) {
         if (currentSubScreen != MainSubScreen.None) {
@@ -313,7 +281,6 @@ fun MainScaffoldScreen(
                         BottomTab.Info.ordinal -> com.suseoaa.locationspoofer.ui.screen.tabs.InfoTab(
                             viewModel = viewModel,
                             uiState = uiState,
-                            updateUiState = updateUiState,
                             tabBarHeight = paddingValues.calculateBottomPadding(),
                             onNavigateToUpdate = { currentSubScreen = MainSubScreen.Update },
                             onNavigateToSettings = { currentSubScreen = MainSubScreen.Settings }
@@ -381,20 +348,5 @@ fun MainScaffoldScreen(
             }
         }
 
-        // 启动时若检测到新版本，弹出更新弹窗（支持忽略此版本、前往更新）
-        if (showStartupUpdateDialog && latestRelease != null) {
-            StartupUpdateDialog(
-                latestRelease = latestRelease,
-                onDismiss = { showStartupUpdateDialog = false },
-                onNavigateToUpdate = {
-                    showStartupUpdateDialog = false
-                    currentSubScreen = MainSubScreen.Update
-                },
-                onIgnore = { version ->
-                    viewModel.setIgnoredVersion(version)
-                    showStartupUpdateDialog = false
-                }
-            )
-        }
     }
 }

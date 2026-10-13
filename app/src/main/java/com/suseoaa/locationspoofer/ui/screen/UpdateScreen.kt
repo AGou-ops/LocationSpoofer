@@ -27,7 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.suseoaa.locationspoofer.BuildConfig
 import com.suseoaa.locationspoofer.R
 import com.suseoaa.locationspoofer.data.model.GithubRelease
@@ -58,12 +57,6 @@ fun UpdateScreen(
 
     BackHandler(onBack = onBack)
 
-    // 进入页面时自动检查一次最新版本
-    LaunchedEffect(Unit) {
-        if (uiState.releases.isEmpty()) {
-            updateViewModel.fetchReleases()
-        }
-    }
 
     // 根据是否接收 Beta 通道过滤候选版本
     val filteredReleases = remember(uiState.releases, appState.checkBetaUpdates) {
@@ -669,138 +662,6 @@ private fun ReleaseItemCard(
                             ) {
                                 Text(stringResource(R.string.download_32), fontSize = 12.sp, color = AccentBlue)
                             }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun StartupUpdateDialog(
-    latestRelease: GithubRelease,
-    onDismiss: () -> Unit,
-    onNavigateToUpdate: () -> Unit,
-    onIgnore: (String) -> Unit
-) {
-    val cleanVersion = remember(latestRelease.versionName) {
-        latestRelease.versionName.trim().removePrefix("v").removePrefix("V")
-    }
-
-    Dialog(onDismissRequest = onDismiss) {
-        MiuixCard(
-            modifier = Modifier.fillMaxWidth(),
-            cornerRadius = 22.dp,
-            insideMargin = PaddingValues(22.dp)
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                // 顶部标题与红点徽章
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(9.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFE53935))
-                        )
-                        Text(
-                            text = stringResource(R.string.new_version_found),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(AccentBlue.copy(alpha = 0.12f))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = "v$cleanVersion",
-                            fontSize = 12.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AccentBlue
-                        )
-                    }
-                }
-
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
-
-                // 更新日志简报
-                if (latestRelease.body.isNotBlank()) {
-                    Box(modifier = Modifier.heightIn(max = 260.dp)) {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            item {
-                                RenderMarkdownContent(markdown = latestRelease.body)
-                            }
-                        }
-                    }
-                } else {
-                    Text(
-                        text = stringResource(R.string.new_version_prompt_desc),
-                        fontSize = 13.5.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                }
-
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
-
-                // 底部操作区（左侧忽略此版本，右侧以后再说与前往更新）
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.ignore_this_version),
-                        fontSize = 12.5.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
-                        modifier = Modifier.noRippleClickable {
-                            onIgnore(latestRelease.versionName)
-                            onDismiss()
-                        }
-                    )
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        TextButton(
-                            onClick = onDismiss,
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text(
-                                stringResource(R.string.later),
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                            )
-                        }
-
-                        Button(
-                            onClick = {
-                                onDismiss()
-                                onNavigateToUpdate()
-                            },
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = AccentBlue),
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
-                            Text(stringResource(R.string.go_to_update), fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

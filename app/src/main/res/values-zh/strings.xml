@@ -285,10 +285,6 @@
     <string name="merged_count_badge">聚合 %d 个更新</string>
     <string name="download_64">下载 (64位)</string>
     <string name="download_32">下载 32位</string>
-    <string name="new_version_found">发现新版本</string>
-    <string name="new_version_prompt_desc">新版本已发布，推荐立即更新以获取全新特性与性能优化。</string>
-    <string name="later">以后再说</string>
-    <string name="go_to_update">前往更新</string>
     <string name="tab_all">全部</string>
     <string name="tab_customized">已自定义</string>
     <string name="tab_user_apps">用户应用</string>

@@ -257,10 +257,6 @@
     <string name="merged_count_badge">تم دمج %d تحديثات</string>
     <string name="download_64">تنزيل (64 بت)</string>
     <string name="download_32">تنزيل 32 بت</string>
-    <string name="new_version_found">تم العثور على إصدار جديد</string>
-    <string name="new_version_prompt_desc">يتوفر إصدار جديد. يُوصى بالتحديث للحصول على الميزات والتحسينات الجديدة.</string>
-    <string name="later">لاحقاً</string>
-    <string name="go_to_update">الذهاب للتحديث</string>
     <string name="tab_all">الكل</string>
     <string name="tab_customized">مخصص</string>
     <string name="tab_user_apps">تطبيقات المستخدم</string>
