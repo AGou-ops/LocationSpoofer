@@ -123,26 +123,41 @@ jobs:
           
       - name: Setup Java
         if: steps.check_version.outputs.changed == 'true'
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17' # Gradle 需要 Java 17 进行编译
           cache: 'gradle'
 
-      - name: Decode Keystore
+      - name: Prepare Keystore
         if: steps.check_version.outputs.changed == 'true'
         env:
           ENCODED_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'LinuxisUbuntu18' }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS || 'suse-app-key' }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'LinuxisUbuntu18' }}
         run: |
-          echo $ENCODED_KEYSTORE | base64 -d > $RUNNER_TEMP/keystore.jks
+          if [ -n "$ENCODED_KEYSTORE" ]; then
+            echo "解码配置的签名密钥库 (KEYSTORE_BASE64)..."
+            echo "$ENCODED_KEYSTORE" | base64 -d > "$RUNNER_TEMP/keystore.jks"
+          else
+            echo "未检测到 KEYSTORE_BASE64 Secret，自动生成 Release 签名密钥库..."
+            keytool -genkeypair -v \
+              -keystore "$RUNNER_TEMP/keystore.jks" \
+              -alias "$KEY_ALIAS" \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "$KEYSTORE_PASSWORD" \
+              -keypass "$KEY_PASSWORD" \
+              -dname "CN=LocationSpoofer, OU=SuseOAA, O=SuseOAA, L=Unknown, ST=Unknown, C=CN"
+          fi
 
       - name: Build Release APK
         if: steps.check_version.outputs.changed == 'true'
         env:
           KEYSTORE_FILE_PATH: ${{ runner.temp }}/keystore.jks
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'LinuxisUbuntu18' }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS || 'suse-app-key' }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'LinuxisUbuntu18' }}
         run: |
           chmod +x ./gradlew
           ./gradlew --no-daemon :app:assembleRelease

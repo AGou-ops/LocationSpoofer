@@ -53,20 +53,33 @@ android {
     }
     signingConfigs {
         create("release") {
-            val keystorePath = System.getenv("KEYSTORE_FILE_PATH")
-                ?: "/Users/vincent/Desktop/SUSE-APP-Key/APP-Key.jks"
-            if (file(keystorePath).exists()) {
-                storeFile = file(keystorePath)
-                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "LinuxisUbuntu18"
-                keyAlias = System.getenv("KEY_ALIAS") ?: "suse-app-key"
-                keyPassword = System.getenv("KEY_PASSWORD") ?: "LinuxisUbuntu18"
+            val keystorePath = System.getenv("KEYSTORE_FILE_PATH")?.takeIf { it.isNotBlank() }
+                ?: (project.findProperty("KEYSTORE_FILE_PATH") as? String)?.takeIf { it.isNotBlank() }
+                ?: rootProject.file("release-key.jks").absolutePath
+            val storePass = System.getenv("KEYSTORE_PASSWORD")?.takeIf { it.isNotBlank() }
+                ?: (project.findProperty("KEYSTORE_PASSWORD") as? String)?.takeIf { it.isNotBlank() }
+                ?: "LinuxisUbuntu18"
+            val alias = System.getenv("KEY_ALIAS")?.takeIf { it.isNotBlank() }
+                ?: (project.findProperty("KEY_ALIAS") as? String)?.takeIf { it.isNotBlank() }
+                ?: "suse-app-key"
+            val keyPass = System.getenv("KEY_PASSWORD")?.takeIf { it.isNotBlank() }
+                ?: (project.findProperty("KEY_PASSWORD") as? String)?.takeIf { it.isNotBlank() }
+                ?: "LinuxisUbuntu18"
+
+            val keystoreFile = file(keystorePath)
+            if (keystoreFile.exists() && keystoreFile.length() > 0) {
+                storeFile = keystoreFile
+                storePassword = storePass
+                keyAlias = alias
+                keyPassword = keyPass
             }
         }
     }
 
     buildTypes {
         debug {
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.getByName("release").takeIf { it.storeFile != null }
+                ?: signingConfigs.getByName("debug")
             buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"$googleMapsApiKey\"")
         }
         release {
@@ -76,7 +89,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.getByName("release").takeIf { it.storeFile != null }
+                ?: signingConfigs.getByName("debug")
             buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"$googleMapsApiKey\"")
         }
     }
